@@ -1,0 +1,162 @@
+package com.gil.example;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.jsoup.nodes.Document;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+
+public final class FindEmail {
+	
+	public static void main(String[] args) throws IOException
+	{
+		System.out.println("Discovering Emails ...");
+		
+		if (args != null && args.length > 0) {
+			for (int i = 0; i < args.length; i++) {
+				System.out.println(args[i]);
+			}			
+		}
+		else {
+			System.out.println("Usage: java com.gil.example.FindEmail <domain>");
+			return;
+		}
+		
+		String url = args[0];		
+		
+		// check URL validity
+		Pattern p = Pattern.compile("^([a-zA-Z0-9]([a-zA-Z0-9\\-]{0,65}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,6}$");
+		Matcher matcher = p.matcher(url);
+		
+		if (!matcher.matches()) {
+			System.out.println("Invalid Domain Name");
+			return;
+		}
+		
+		// seeds for collecting all links		
+		Set<String> links = new HashSet<String>();
+		links.add(url);
+		
+		Set<String> discoverLinks = new HashSet<String>();
+		discoverLinks.add(url);
+		
+		links = discoverAllLinks(links, discoverLinks, url);
+		Set<String> emails = discoverAllEmails(links);
+		
+        System.out.println(links);
+        //System.out.println(emails);
+        
+        System.out.println("Found these emails:");
+        
+        for (String email : emails) {
+        	System.out.println(email);
+        }	    
+	}
+	
+	private static Set<String> discoverAllLinks(Set<String> allLinks, Set<String> discoverLinks, String url)
+	{		
+		////
+		/**
+		System.out.println("******* DISCOVER LINKS ******");
+		for (String s : discoverLinks) {
+			System.out.println("DISCOVER LINK = " + s);
+		}
+		System.out.println("******* !! DISCOVER LINKS ******");
+		**/
+		////
+		
+		Set<String> removeMe = new HashSet<String>();
+		Set<String> newDiscoverLinks = new HashSet<String>();
+		
+		for (String link : discoverLinks) {
+			
+			System.out.println("DISCOVER LINK="+link);
+			
+			try {
+			
+				Document doc = Jsoup.connect("http://" + link).get(); // "http://" + args[0]).get();			
+				Elements elements = doc.select("a[href]");				
+				
+				for (Element e : elements) {
+		        	
+		        	String l = e.attr("href");
+		        	if (l.contains(url)) {
+						//System.out.println("Contains="+l);
+						allLinks.add(l);
+						newDiscoverLinks.add(l);
+					}
+		        	else {		        		
+		        		removeMe.add(l);	
+		        	}
+		        }
+			}
+			catch (Exception e) {
+				//e.printStackTrace();
+			}			
+		}
+		
+		/**
+		for (String foo : removeMe) {
+			System.out.println("REMOVE ME = " + foo);
+		}
+		
+		for (String foo : newDiscoverLinks) {
+			System.out.println("NEW DISCOVER ME = " + foo);
+		}
+		
+		for (String foo : allLinks) {
+			System.out.println("LINKS = " + foo);
+		}
+		**/
+		
+		if (newDiscoverLinks.size() > 0) {
+			return discoverAllLinks(allLinks, newDiscoverLinks, url);
+		}
+		
+		return allLinks;
+	}
+	
+	private static Set<String> discoverAllEmails(Set<String> links)
+	{
+		//Set<String> removeMe = new HashSet<String>();
+		Set<String> emails = new HashSet<String>();
+		
+		for (String s : links) {
+		
+			try {
+				Document doc = Jsoup.connect(s).get(); // "http://" + args[0]).get();
+		        //stackoverflow.com/questions/15893655/magento-ecomdev-phpunit-customer-fixtures-are-not-being-loaded/16668990#16668990").get();
+		       
+		        Pattern p = Pattern.compile("[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+");
+		        Matcher matcher = p.matcher(doc.text());
+		        //Set<String> emails = new HashSet<String>();
+		        while (matcher.find()) {
+		            emails.add(matcher.group());
+		        }
+				
+			}
+			catch (Exception e) {
+				//e.printStackTrace();
+			}
+			
+			/**
+			if (s.contains(url)) {
+				System.out.println("Contains="+s);
+			}
+			else {
+				removeMe.add(s);
+			}
+			**/
+			//	links.remove(s);
+			//}			
+		}
+		
+		return emails;
+	}
+
+}

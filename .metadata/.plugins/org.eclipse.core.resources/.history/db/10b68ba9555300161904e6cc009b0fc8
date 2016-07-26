@@ -1,0 +1,9 @@
+package com.gil.example;
+
+public class DiscoverEmails {
+
+	public DiscoverEmails(Set<String> links)
+	{
+		
+	}
+}

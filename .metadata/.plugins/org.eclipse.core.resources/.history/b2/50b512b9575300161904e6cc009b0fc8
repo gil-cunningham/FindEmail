@@ -1,0 +1,45 @@
+package com.gil.example;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
+public class DiscoverEmails {
+
+	private Set<String> _links;
+	
+	public DiscoverEmails(Set<String> links)
+	{
+		_links = links;
+	}
+	
+	// iterate over links, collect emails and return
+	public Set<String> discoverAllEmails()
+	{		
+		Set<String> emails = new HashSet<String>();
+		
+		for (String s : _links) {
+		
+			try {
+				Document doc = Jsoup.connect(s).get(); 
+				
+		        Pattern p = Pattern.compile("[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+");
+		        Matcher matcher = p.matcher(doc.text());
+		        
+		        while (matcher.find()) {
+		            emails.add(matcher.group());
+		        }
+				
+			}
+			catch (Exception e) {
+				//e.printStackTrace();
+			}					
+		}
+		
+		return emails;
+	}
+}

@@ -1,0 +1,51 @@
+package com.gil.example;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.jsoup.nodes.Document;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+
+public final class FindEmail {
+	
+	public static void main(String[] args) throws IOException
+	{
+		System.out.println("Discovering Emails ...");
+		
+		if (args == null || args.length <= 0) {		
+			System.out.println("Usage: java com.gil.example.FindEmail <domain>");
+			return;
+		}
+		
+		// check URL validity
+		String url = args[0];
+		
+		Pattern p = Pattern.compile("^([a-zA-Z0-9]([a-zA-Z0-9\\-]{0,65}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,6}$");
+		Matcher matcher = p.matcher(url);
+		
+		if (!matcher.matches()) {
+			System.out.println("Invalid Domain Name");
+			return;
+		}
+		
+		Set<String> links = new DiscoverLinks(url).discoverAllLinks();		
+		Set<String> emails = new DiscoverEmails(links).discoverAllEmails();
+		
+        //System.out.println(links);
+        //System.out.println(emails);
+        
+        System.out.println("Found these emails:");
+        
+        for (String email : emails) {
+        	System.out.println(email);
+        }	    
+	}
+	
+	
+
+}
