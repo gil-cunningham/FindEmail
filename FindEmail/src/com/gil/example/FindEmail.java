@@ -29,7 +29,7 @@ public final class FindEmail {
 		Matcher matcher = p.matcher(url);
 		
 		if (!matcher.matches()) {
-			System.out.println("Invalid Domain Name");
+			System.out.println("Invalid Domain Name: \"" + url + "\"");
 			return;
 		}
 		
@@ -39,7 +39,7 @@ public final class FindEmail {
         //System.out.println(links);
         //System.out.println(emails);
         
-        System.out.println("Found these emails:");
+        System.out.println("Found these emails for:");
         
         for (String email : emails) {
         	System.out.println(email);
